@@ -1,5 +1,6 @@
 package com.example.apiempleados.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,6 +27,7 @@ public class Empleado {
     private String apellidos;
     private LocalDate fechaNacimiento;
 
+    @JsonIgnore //Para que Jackson no serielice esta propiedad a JSON y no se forme un buble infinito
     @ManyToOne
     private Departamento departamento;
 

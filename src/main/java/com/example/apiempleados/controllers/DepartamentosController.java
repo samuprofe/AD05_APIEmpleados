@@ -1,18 +1,23 @@
 package com.example.apiempleados.controllers;
 
 import com.example.apiempleados.entities.Departamento;
+import com.example.apiempleados.entities.Empleado;
 import com.example.apiempleados.repositories.DepartamentoRepository;
+import com.example.apiempleados.repositories.EmpleadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class DepartamentosController {
 
     @Autowired
     private DepartamentoRepository departamentoRepository;
+    @Autowired
+    private EmpleadoRepository empleadoRepository;
 
     // Obtener todos los departamentos
     @GetMapping("/departamentos")
@@ -56,5 +61,51 @@ public class DepartamentosController {
                     return ResponseEntity.noContent().build();
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // Agregar un empleado a un departamento
+    @PostMapping("/departamentos/{departamentoId}/empleados/{empleadoId}")
+    public ResponseEntity<Departamento> addEmpleadoToDepartamento(@PathVariable Long departamentoId, @PathVariable Long empleadoId) {
+        Optional<Departamento> departamentoOpt = departamentoRepository.findById(departamentoId);
+        Optional<Empleado> empleadoOpt = empleadoRepository.findById(empleadoId);
+
+        if (departamentoOpt.isPresent() && empleadoOpt.isPresent()) {
+            Departamento departamento = departamentoOpt.get();
+            Empleado empleado = empleadoOpt.get();
+
+            empleado.setDepartamento(departamento);  // Asignar el departamento al empleado
+            departamento.getEmpleados().add(empleado);  // Agregar el empleado a la lista
+
+            departamentoRepository.save(departamento);  // Guardar el departamento actualizado.
+            empleadoRepository.save(empleado);  // Guardar el empleado con la nueva relación.
+
+            return ResponseEntity.ok(departamento); //Código 200 OK
+        }
+
+        return ResponseEntity.notFound().build();   //Código 404 Not Found
+    }
+
+    // Eliminar un empleado de un departamento
+    @DeleteMapping("/departamentos/{departamentoId}/empleados/{empleadoId}")
+    public ResponseEntity<Departamento> removeEmpleadoFromDepartamento(@PathVariable Long departamentoId, @PathVariable Long empleadoId) {
+        Optional<Departamento> departamentoOpt = departamentoRepository.findById(departamentoId);
+        Optional<Empleado> empleadoOpt = empleadoRepository.findById(empleadoId);
+
+        if (departamentoOpt.isPresent() && empleadoOpt.isPresent()) {
+            Departamento departamento = departamentoOpt.get();
+            Empleado empleado = empleadoOpt.get();
+
+            if (empleado.getDepartamento() != null && empleado.getDepartamento().getId().equals(departamentoId)) {
+                empleado.setDepartamento(null);  // Eliminar la relación con el departamento
+                departamento.getEmpleados().remove(empleado);  // Remover de la lista
+
+                empleadoRepository.save(empleado);  // Guardar el cambio en empleado
+                departamentoRepository.save(departamento);  // Guardar el cambio en departamento
+
+                return ResponseEntity.ok(departamento);
+            }
+        }
+
+        return ResponseEntity.notFound().build();
     }
 }
