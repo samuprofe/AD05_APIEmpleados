@@ -19,7 +19,6 @@ public class Departamento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nombre;
 
     @OneToMany(mappedBy = "departamento", cascade = CascadeType.PERSIST)

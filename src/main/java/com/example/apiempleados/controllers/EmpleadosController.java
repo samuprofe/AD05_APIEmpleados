@@ -2,12 +2,16 @@ package com.example.apiempleados.controllers;
 
 import com.example.apiempleados.entities.Empleado;
 import com.example.apiempleados.repositories.EmpleadoRepository;
-import org.hibernate.usertype.StaticUserTypeSupport;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -17,8 +21,8 @@ public class EmpleadosController {
     EmpleadoRepository empleadoRepository;
 
     @GetMapping("/empleados")
-    public ResponseEntity<List<Empleado>> findAllEmpleados(){
-        return ResponseEntity.ok(empleadoRepository.findAll());
+    public ResponseEntity<Page<Empleado>> findAllEmpleados(@PageableDefault(page = 0, size = 5, sort = "apellidos", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(empleadoRepository.findAll(pageable));
     }
 
     @GetMapping("/empleados/{id}")
@@ -51,14 +55,18 @@ public class EmpleadosController {
     }
 
     @PostMapping("/empleados")
-    public ResponseEntity<Empleado> createEmpleado(@RequestBody Empleado empleado){
+    public ResponseEntity<?> createEmpleado(@Valid @RequestBody Empleado empleado){
         //Una mejora posible sería retornar la URI del recurso creado.
         //Lo simplificamos por el momento devolviendo el código 201(created) y el empleado creado en el cuerpo
-        return ResponseEntity.status(301).body(empleadoRepository.save(empleado));
+        try {
+            return ResponseEntity.status(301).body(empleadoRepository.save(empleado));
+        }catch (DataIntegrityViolationException e){
+            return ResponseEntity.badRequest().body("La dirección de email ya existe en la base de datos");
+        }
     }
 
     @PutMapping("/empleados/{id}")
-    public ResponseEntity<Empleado> updateEmpleado(@RequestBody Empleado empleadoNuevo, @PathVariable Long id){
+    public ResponseEntity<Empleado> updateEmpleado(@Valid @RequestBody Empleado empleadoNuevo, @PathVariable Long id){
         Optional<Empleado> empleado = empleadoRepository.findById(id);
         if(empleado.isPresent()){
             empleado.get().setApellidos(empleadoNuevo.getApellidos());

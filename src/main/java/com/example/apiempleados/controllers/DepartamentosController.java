@@ -5,12 +5,17 @@ import com.example.apiempleados.entities.Empleado;
 import com.example.apiempleados.repositories.DepartamentoRepository;
 import com.example.apiempleados.repositories.EmpleadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 public class DepartamentosController {
 
@@ -21,8 +26,8 @@ public class DepartamentosController {
 
     // Obtener todos los departamentos
     @GetMapping("/departamentos")
-    public ResponseEntity<List<Departamento>> findAllDepartamentos() {
-        return ResponseEntity.ok(departamentoRepository.findAll());
+    public ResponseEntity<Page<Departamento>> findAllDepartamentos(@PageableDefault(page = 0, size = 5,sort = "nombre", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(departamentoRepository.findAll(pageable));
     }
 
     // Obtener un departamento por ID
