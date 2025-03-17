@@ -14,7 +14,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,7 +65,11 @@ public class ProyectosController {
     public ResponseEntity<Object> deleteProyecto(@PathVariable Long id) {
         return proyectoRepository.findById(id)
                 .map(proyecto -> {
-                    proyectoRepository.deleteById(id);
+                    //Borro relaciones con empleados
+                    proyecto.getEmpleados().forEach(empleado -> {empleado.getProyectos().remove(proyecto);});
+                    proyecto.getEmpleados().clear();
+
+                    proyectoRepository.delete(proyecto);
                     return ResponseEntity.noContent().build();
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -82,7 +85,10 @@ public class ProyectosController {
             Proyecto proyecto = proyectoOpt.get();
             Empleado empleado = empleadoOpt.get();
 
-            proyecto.getEmpleados().add(empleado);  // Agregar el empleado a la lista del proyecto
+            //TODO Comprobar que no exista ya el empleado en el proyecto
+            if(!proyecto.getEmpleados().contains(empleado)) {
+                proyecto.getEmpleados().add(empleado);  // Agregar el empleado a la lista del proyecto
+            }
 
             proyectoRepository.save(proyecto);  // Guardar el proyecto actualizado
 

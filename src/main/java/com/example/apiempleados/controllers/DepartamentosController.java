@@ -62,6 +62,7 @@ public class DepartamentosController {
     public ResponseEntity<Object> deleteDepartamento(@PathVariable Long id) {
         return departamentoRepository.findById(id)
                 .map(departamento -> {
+                    departamento.getEmpleados().forEach(empleado -> {empleado.setDepartamento(null);});
                     departamentoRepository.deleteById(id);
                     return ResponseEntity.noContent().build();
                 })

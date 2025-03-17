@@ -27,8 +27,9 @@ public class GlobalExceptionHandler {
 
     // Manejo de excepciones generales (Errores inesperados)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGlobalException(Exception ex) {
+    public ResponseEntity<Map<String,String>> handleGlobalException(Exception ex) {
+        ex.printStackTrace();   //Para ver toda la traza del error en la consola
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Ocurrió un error inesperado: " + ex.toString());
+                .body(Map.of("Error",ex.toString()));
     }
 }

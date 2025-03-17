@@ -36,6 +36,10 @@ public class EmpleadosController {
     public ResponseEntity<Object> deleteEmpleado(@PathVariable Long id){
         return empleadoRepository.findById(id)
                 .map(empleado -> {
+                    //Borramos las relaciones con los proyectos
+                    empleado.getProyectos().forEach(proyecto -> {proyecto.getEmpleados().remove(empleado);});
+                    empleado.getProyectos().clear();
+
                     empleadoRepository.deleteById(id);
                     return ResponseEntity.noContent().build();
                 })
@@ -45,6 +49,7 @@ public class EmpleadosController {
 
 //         Optional<Empleado> empleadOptl = empleadoRepository.findById(id);
 //         if (empleadOptl.isPresent()){
+
 //             empleadoRepository.deleteById(id);
 //             return ResponseEntity.noContent().build();
 //         }

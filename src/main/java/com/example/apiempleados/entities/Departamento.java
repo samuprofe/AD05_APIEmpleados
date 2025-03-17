@@ -21,6 +21,6 @@ public class Departamento {
     private Long id;
     private String nombre;
 
-    @OneToMany(mappedBy = "departamento", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "departamento", cascade = {CascadeType.PERSIST})
     private List<Empleado> empleados = new ArrayList<>();
 }
